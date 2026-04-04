@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/videoCard"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    app:cardCornerRadius="8dp"
+    android:background="@color/search_bar_background">
+
+    <LinearLayout
+        android:id="@+id/lear_language_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="12dp">
+
+        <!-- LEFT IMAGE -->
+        <ImageView
+            android:id="@+id/lear_language"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/english"
+            android:scaleType="centerCrop"
+            android:layout_marginEnd="12dp" />
+
+        <!-- TEXT (optional, but usually needed) -->
+        <TextView
+            android:id="@+id/languageName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="English"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

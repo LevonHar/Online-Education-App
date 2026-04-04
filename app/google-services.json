@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "964280688857",
+    "project_id": "video-admin-app-79593",
+    "storage_bucket": "video-admin-app-79593.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964280688857:android:1ad1348d7771b3a076dec8",
+        "android_client_info": {
+          "package_name": "com.network.olinecourselanguage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApi5NUy91oV8-kyp8gaej6dsxLVM4m1-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:964280688857:android:efe89cb19e72b00376dec8",
+        "android_client_info": {
+          "package_name": "com.network.videoadminapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyApi5NUy91oV8-kyp8gaej6dsxLVM4m1-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
