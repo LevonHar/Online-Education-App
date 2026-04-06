@@ -18,6 +18,8 @@
             android:exported="false" />
         <activity
             android:name=".VideosListActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:screenOrientation="fullSensor"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

@@ -1,12 +1,15 @@
 package com.network.olinecourselanguage
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -26,6 +29,8 @@ class VideosListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_videos_list)
+
+        setStatusBarColorWhite()
 
         categoryId = intent.getStringExtra("categoryId") ?: ""
         itemId = intent.getStringExtra("itemId") ?: ""
@@ -48,6 +53,18 @@ class VideosListActivity : AppCompatActivity() {
         videosRecyclerView.adapter = videosAdapter
 
         loadVideos()
+    }
+
+    private fun setStatusBarColorWhite() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.statusBarColor = ContextCompat.getColor(this, android.R.color.white)
+
+            // For Android 6.0 and above, set dark icons on white background
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+        }
     }
 
     private fun loadVideos() {
