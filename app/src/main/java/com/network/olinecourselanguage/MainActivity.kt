@@ -17,6 +17,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var db: FirebaseFirestore
     private lateinit var categoryDropdown: AutoCompleteTextView
+    private lateinit var dropdownLayout: TextInputLayout
     private val categoriesList = mutableListOf<String>()
     private val categoryIdMap = mutableMapOf<String, String>() // name -> id
 
@@ -25,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private val itemsList = mutableListOf<CourseItem>()
 
     private var currentCategoryId: String = ""
+    private var isDropdownOpen = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,12 +35,14 @@ class MainActivity : AppCompatActivity() {
         db = FirebaseFirestore.getInstance()
 
         categoryDropdown = findViewById(R.id.dropdown1)
+        dropdownLayout = findViewById(R.id.dropdownLayout1)
 
-        // Setup dropdown layout
-        val textInputLayout = findViewById<TextInputLayout>(R.id.dropdownLayout1)
-        textInputLayout.setEndIconOnClickListener {
-            categoryDropdown.showDropDown()
-        }
+        // Set default text
+        categoryDropdown.setText("", false)
+        categoryDropdown.hint = "Select language"
+
+        // Setup dropdown toggle logic
+        setupDropdownToggle()
 
         // Setup items RecyclerView
         itemsRecyclerView = findViewById(R.id.itemsRecyclerView)
@@ -60,6 +64,61 @@ class MainActivity : AppCompatActivity() {
             val selectedCategoryId = categoryIdMap[selectedCategory] ?: return@setOnItemClickListener
             currentCategoryId = selectedCategoryId
             loadItemsForCategory(selectedCategoryId)
+            closeDropdown() // Close dropdown after selection
+        }
+
+        // Handle focus change to close dropdown when losing focus
+        categoryDropdown.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                closeDropdown()
+            }
+        }
+    }
+
+    private fun setupDropdownToggle() {
+        // Method 1: Click on the end icon (dropdown arrow)
+        dropdownLayout.setEndIconOnClickListener {
+            toggleDropdown()
+        }
+
+        // Method 2: Click on the AutoCompleteTextView itself
+        categoryDropdown.setOnClickListener {
+            toggleDropdown()
+        }
+
+        // Method 3: Click on the entire TextInputLayout area
+        dropdownLayout.setOnClickListener {
+            toggleDropdown()
+        }
+    }
+
+    private fun toggleDropdown() {
+        if (isDropdownOpen) {
+            closeDropdown()
+        } else {
+            openDropdown()
+        }
+    }
+
+    private fun openDropdown() {
+        if (categoriesList.isNotEmpty()) {
+            categoryDropdown.showDropDown()
+            isDropdownOpen = true
+
+            // Optional: Change icon to indicate dropdown is open
+            dropdownLayout.endIconDrawable?.setTint(resources.getColor(android.R.color.holo_blue_dark))
+        } else {
+            Toast.makeText(this, "No languages available", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun closeDropdown() {
+        if (isDropdownOpen) {
+            categoryDropdown.dismissDropDown()
+            isDropdownOpen = false
+
+            // Optional: Reset icon color
+            dropdownLayout.endIconDrawable?.setTint(resources.getColor(R.color.gray))
         }
     }
 
@@ -83,21 +142,40 @@ class MainActivity : AppCompatActivity() {
 
                 if (categoriesList.isNotEmpty()) {
                     setupCategoryDropdown()
-                    // Auto-load first category
-                    val firstCategoryName = categoriesList[0]
-                    currentCategoryId = categoryIdMap[firstCategoryName] ?: ""
-                    categoryDropdown.setText(firstCategoryName, false)
-                    loadItemsForCategory(currentCategoryId)
+                    // Don't auto-select first category anymore
+                    categoryDropdown.setText("", false)
+                    // Clear items view until user selects a category
+                    itemsList.clear()
+                    itemsAdapter.notifyDataSetChanged()
+                    showEmptyState(true, "Select a language to view courses")
                 } else {
                     // Show empty state for categories
-                    findViewById<TextView>(R.id.emptyStateText).visibility = View.VISIBLE
-                    itemsRecyclerView.visibility = View.GONE
+                    showEmptyState(true, "No languages available")
                 }
             }
     }
 
     private fun setupCategoryDropdown() {
-        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categoriesList)
+        val adapter = object : ArrayAdapter<String>(
+            this,
+            android.R.layout.simple_dropdown_item_1line,
+            categoriesList
+        ) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent)
+                val textView = view as TextView
+                textView.setTextColor(resources.getColor(android.R.color.black))
+                return view
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent)
+                val textView = view as TextView
+                textView.setTextColor(resources.getColor(android.R.color.black))
+                return view
+            }
+        }
+
         categoryDropdown.setAdapter(adapter)
         categoryDropdown.threshold = 1 // Start showing after 1 character
     }
@@ -126,18 +204,37 @@ class MainActivity : AppCompatActivity() {
                 itemsAdapter.notifyDataSetChanged()
 
                 // Show/hide empty state
-                val emptyStateText = findViewById<TextView>(R.id.emptyStateText)
-                val itemsRecyclerView = findViewById<RecyclerView>(R.id.itemsRecyclerView)
-
                 if (itemsList.isEmpty()) {
-                    emptyStateText.visibility = View.VISIBLE
-                    itemsRecyclerView.visibility = View.GONE
-                    emptyStateText.text = "No items available in this category"
+                    showEmptyState(true, "No courses available in this language")
                 } else {
-                    emptyStateText.visibility = View.GONE
-                    itemsRecyclerView.visibility = View.VISIBLE
+                    showEmptyState(false, "")
                 }
             }
+    }
+
+    private fun showEmptyState(show: Boolean, message: String = "") {
+        val emptyStateText = findViewById<TextView>(R.id.emptyStateText)
+        val itemsRecyclerView = findViewById<RecyclerView>(R.id.itemsRecyclerView)
+
+        if (show) {
+            emptyStateText.visibility = View.VISIBLE
+            itemsRecyclerView.visibility = View.GONE
+            if (message.isNotEmpty()) {
+                emptyStateText.text = message
+            }
+        } else {
+            emptyStateText.visibility = View.GONE
+            itemsRecyclerView.visibility = View.VISIBLE
+        }
+    }
+
+    // Optional: Handle back button to close dropdown if open
+    override fun onBackPressed() {
+        if (isDropdownOpen) {
+            closeDropdown()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     data class CourseItem(
@@ -173,7 +270,7 @@ class MainActivity : AppCompatActivity() {
                     .load(item.imageUrl)
                     .placeholder(android.R.drawable.ic_menu_gallery)
                     .error(android.R.drawable.ic_menu_gallery)
-                    .into(holder.image)  // Removed centerCrop() and circleCrop() to maintain original sizing
+                    .into(holder.image)
             } else {
                 holder.image.setImageResource(android.R.drawable.ic_menu_gallery)
             }
